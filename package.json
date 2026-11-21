@@ -1,0 +1,38 @@
+{
+  "name": "multicasa",
+  "version": "1.0.0",
+  "description": "Bienes Raíces Multicasa — Node.js, Express, Sequelize, PostgreSQL y Tailwind CSS",
+  "main": "src/server.js",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "concurrently -n server,css \"nodemon src/server.js\" \"npm run dev:css\"",
+    "dev:css": "tailwindcss -i ./src/input.css -o ./public/css/styles.css --watch",
+    "build:css": "tailwindcss -i ./src/input.css -o ./public/css/styles.css --minify",
+    "db:init": "node src/database/init.js",
+    "db:reset": "node src/database/init.js --force"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^18.0.10",
+    "ejs": "^7.0.2",
+    "express": "^5.3.0",
+    "express-ejs-layouts": "^2.5.1",
+    "express-session": "^1.19.0",
+    "multer": "^2.5.0",
+    "nodemailer": "^10.6.0",
+    "pdfkit": "^0.20.2",
+    "pg": "^8.23.1",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.37.8",
+    "sharp": "^0.35.5"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.7",
+    "nodemon": "^3.1.14",
+    "tailwindcss": "^3.4.19"
+  }
+}

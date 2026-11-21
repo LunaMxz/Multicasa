@@ -1,0 +1,6 @@
+node_modules/
+.env
+public/img/casas/*
+!public/img/casas/.gitkeep
+public/media/*
+!public/media/.gitkeep

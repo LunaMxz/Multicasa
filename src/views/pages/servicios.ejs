@@ -1,0 +1,9 @@
+<h1 class="titulo-seccion">Servicios</h1>
+<div class="grid gap-4 sm:grid-cols-2">
+  <% [['Compra', 'Te ayudamos a encontrar la casa ideal.'], ['Construir', 'Construimos tu proyecto a la medida.'], ['Venta', 'Publica y vende tu propiedad con nosotros.'], ['Mudanzas', 'Servicio de mudanza para tu nueva casa.'], ['Seguros', 'Protege tu patrimonio.']].forEach(([t, d]) => { %>
+    <div class="rounded border p-4">
+      <h2 class="font-bold text-brand-dark"><%= t %></h2>
+      <p class="mt-1 text-sm text-slate-600"><%= d %> <%# TODO: texto real %></p>
+    </div>
+  <% }) %>
+</div>

@@ -1,0 +1,31 @@
+<div class="mb-4 flex items-center justify-between">
+  <h1 class="text-xl font-bold text-brand-dark">Casas (<%= casas.length %>)</h1>
+  <a href="/admin/casas/nueva" class="btn">+ Nueva casa</a>
+</div>
+
+<div class="overflow-x-auto rounded bg-white shadow">
+  <table class="w-full text-left text-sm">
+    <thead class="bg-slate-100 text-xs uppercase text-slate-600">
+      <tr><th class="p-2">ID</th><th class="p-2">Título</th><th class="p-2">Ciudad</th><th class="p-2">Precio</th><th class="p-2">Estatus</th><th class="p-2">Fotos</th><th class="p-2"></th></tr>
+    </thead>
+    <tbody>
+      <% casas.forEach((c) => { %>
+        <tr class="border-t">
+          <td class="p-2"><%= c.id %></td>
+          <td class="p-2 font-semibold"><%= c.titulo %></td>
+          <td class="p-2"><%= c.ciudad %>, <%= c.estado %></td>
+          <td class="p-2"><%= moneda(c.precio) %></td>
+          <td class="p-2"><span class="rounded px-2 py-0.5 text-xs text-white <%= c.estatus === 'venta' ? 'bg-leaf' : 'bg-accent' %>"><%= c.estatus === 'venta' ? 'En venta' : 'Vendida' %></span></td>
+          <td class="p-2"><%= (c.imagenes || []).length %></td>
+          <td class="flex gap-2 p-2">
+            <a href="/admin/casas/<%= c.id %>/editar" class="btn-secundario !px-3 !py-1 !text-xs">Editar</a>
+            <form action="/admin/casas/<%= c.id %>/eliminar" method="post" onsubmit="return confirm('¿Eliminar esta casa y sus fotos?')">
+              <button class="btn-peligro">Eliminar</button>
+            </form>
+          </td>
+        </tr>
+      <% }) %>
+      <% if (!casas.length) { %><tr><td colspan="7" class="p-4 text-center text-slate-500">No hay casas registradas.</td></tr><% } %>
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,5 @@
+<% if (flash) { %>
+  <div class="mb-4 rounded border p-3 text-sm <%= flash.tipo === 'error' ? 'border-red-300 bg-red-50 text-red-700' : 'border-green-300 bg-green-50 text-green-700' %>">
+    <%= flash.mensaje %>
+  </div>
+<% } %>

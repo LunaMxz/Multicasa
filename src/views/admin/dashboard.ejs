@@ -1,0 +1,21 @@
+<h1 class="mb-4 text-xl font-bold text-brand-dark">Dashboard</h1>
+
+<div class="mb-6 grid gap-3 sm:grid-cols-3">
+  <div class="rounded bg-white p-4 shadow"><p class="text-xs text-slate-500">Total de casas</p><p class="text-3xl font-bold"><%= total %></p></div>
+  <div class="rounded bg-white p-4 shadow"><p class="text-xs text-slate-500">En venta</p><p class="text-3xl font-bold text-leaf"><%= estatus.venta %></p></div>
+  <div class="rounded bg-white p-4 shadow"><p class="text-xs text-slate-500">Vendidas</p><p class="text-3xl font-bold text-accent"><%= estatus.vendida %></p></div>
+</div>
+
+<div class="grid gap-4 md:grid-cols-2">
+  <section class="rounded bg-white p-4 shadow">
+    <h2 class="titulo-seccion">Casas por rango de costo</h2>
+    <canvas id="grafRango" height="220"></canvas>
+  </section>
+  <section class="rounded bg-white p-4 shadow">
+    <h2 class="titulo-seccion">Vendidas vs. en venta</h2>
+    <canvas id="grafEstatus" height="220"></canvas>
+  </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="/js/dashboard.js"></script>

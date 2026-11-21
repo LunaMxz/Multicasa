@@ -1,0 +1,14 @@
+<%# TODO(PSD): ajustar logo, fondo y botón "Llama al" con las medidas exactas del diseño %>
+<header class="bg-brand-dark text-white">
+  <div class="mx-auto flex max-w-6xl items-center justify-between px-3 py-2">
+    <a href="/"><img src="/img/logo_header.png" alt="Bienes Raíces Multicasa" class="h-12 w-auto"></a>
+    <img src="/img/telefono.png" alt="Llama al 1-800-123-4567" class="hidden h-9 w-auto sm:block">
+  </div>
+  <nav class="bg-brand">
+    <ul class="mx-auto flex max-w-6xl flex-wrap px-3 text-sm font-semibold">
+      <% [['/', 'Inicio'], ['/compania', 'La Compañía'], ['/servicios', 'Servicios'], ['/requisitos', 'Requisitos'], ['/contacto', 'Contactos']].forEach(([href, label]) => { %>
+        <li><a href="<%= href %>" class="block px-5 py-2 hover:bg-brand-light <%= rutaActual === href ? 'bg-brand-light' : '' %>"><%= label %></a></li>
+      <% }) %>
+    </ul>
+  </nav>
+</header>

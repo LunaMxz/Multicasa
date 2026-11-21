@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .btn { @apply inline-block rounded bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-dark; }
+  .btn-secundario { @apply inline-block rounded border border-brand px-4 py-2 text-sm font-semibold text-brand transition hover:bg-brand hover:text-white; }
+  .btn-peligro { @apply inline-block rounded bg-red-600 px-3 py-1 text-xs font-semibold text-white hover:bg-red-700; }
+  .input { @apply w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand; }
+  .label { @apply mb-1 block text-xs font-semibold text-slate-600; }
+  .titulo-seccion { @apply mb-3 border-b-2 border-brand pb-1 text-sm font-bold uppercase text-brand-dark; }
+}

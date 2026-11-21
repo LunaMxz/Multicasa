@@ -1,0 +1,52 @@
+<% const v = (k) => (casa[k] !== undefined && casa[k] !== null ? casa[k] : ''); const editando = !!casa.id; %>
+<h1 class="mb-4 text-xl font-bold text-brand-dark"><%= editando ? 'Editar casa #' + casa.id : 'Nueva casa' %></h1>
+
+<% if (errores.length) { %>
+  <ul class="mb-4 list-disc rounded border border-red-300 bg-red-50 p-3 pl-8 text-sm text-red-700">
+    <% errores.forEach((e) => { %><li><%= e %></li><% }) %>
+  </ul>
+<% } %>
+
+<form action="<%= editando ? '/admin/casas/' + casa.id + '/editar' : '/admin/casas' %>" method="post" enctype="multipart/form-data" class="grid gap-3 rounded bg-white p-4 shadow md:grid-cols-2">
+  <div class="md:col-span-2"><label class="label" for="titulo">Título *</label><input class="input" id="titulo" name="titulo" value="<%= v('titulo') %>" required></div>
+  <div class="md:col-span-2"><label class="label" for="descripcion">Descripción</label><textarea class="input" id="descripcion" name="descripcion" rows="4"><%= v('descripcion') %></textarea></div>
+  <div><label class="label" for="precio">Precio (MXN) *</label><input class="input" id="precio" name="precio" type="number" min="1" step="1000" value="<%= v('precio') %>" required></div>
+  <div>
+    <label class="label" for="estatus">Estatus</label>
+    <select class="input" id="estatus" name="estatus">
+      <option value="venta" <%= v('estatus') === 'venta' ? 'selected' : '' %>>En venta</option>
+      <option value="vendida" <%= v('estatus') === 'vendida' ? 'selected' : '' %>>Vendida</option>
+    </select>
+  </div>
+  <div><label class="label" for="recamaras">Recámaras</label><input class="input" id="recamaras" name="recamaras" type="number" min="0" value="<%= v('recamaras') %>"></div>
+  <div><label class="label" for="banos">Baños</label><input class="input" id="banos" name="banos" type="number" min="0" value="<%= v('banos') %>"></div>
+  <div><label class="label" for="ciudad">Ciudad *</label><input class="input" id="ciudad" name="ciudad" value="<%= v('ciudad') %>" required></div>
+  <div><label class="label" for="estado">Estado *</label><input class="input" id="estado" name="estado" value="<%= v('estado') %>" required></div>
+  <div><label class="label" for="cp">C.P.</label><input class="input" id="cp" name="cp" value="<%= v('cp') %>"></div>
+  <div><label class="label" for="direccion">Dirección</label><input class="input" id="direccion" name="direccion" value="<%= v('direccion') %>"></div>
+  <div><label class="label" for="latitud">Latitud (para el mapa)</label><input class="input" id="latitud" name="latitud" type="number" step="any" value="<%= v('latitud') %>"></div>
+  <div><label class="label" for="longitud">Longitud (para el mapa)</label><input class="input" id="longitud" name="longitud" type="number" step="any" value="<%= v('longitud') %>"></div>
+  <div class="md:col-span-2">
+    <label class="label" for="imagenes">Fotos (JPG, PNG o WebP; se optimizan automáticamente)</label>
+    <input class="input" id="imagenes" name="imagenes" type="file" accept="image/jpeg,image/png,image/webp" multiple>
+  </div>
+  <div class="flex gap-2 md:col-span-2">
+    <button class="btn">Guardar</button>
+    <a href="/admin/casas" class="btn-secundario">Cancelar</a>
+  </div>
+</form>
+
+<% if (editando && (casa.imagenes || []).length) { %>
+  <h2 class="titulo-seccion mt-6">Fotos actuales</h2>
+  <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+    <% casa.imagenes.forEach((i) => { %>
+      <div class="rounded bg-white p-2 shadow">
+        <img src="<%= i.miniatura %>" alt="" class="h-28 w-full rounded object-cover">
+        <div class="mt-2 flex items-center justify-between text-xs">
+          <span><%= i.esPrincipal ? 'Principal' : '' %></span>
+          <form action="/admin/casas/<%= casa.id %>/imagenes/<%= i.id %>/eliminar" method="post"><button class="btn-peligro">Quitar</button></form>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+<% } %>

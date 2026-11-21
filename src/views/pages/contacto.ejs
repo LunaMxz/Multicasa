@@ -1,0 +1,8 @@
+<h1 class="titulo-seccion">Contacto</h1>
+<form action="/contacto" method="post" class="max-w-lg space-y-3">
+  <div><label class="label" for="nombre">Nombre</label><input class="input" id="nombre" name="nombre" value="<%= datos.nombre || '' %>" required></div>
+  <div><label class="label" for="email">Correo electrónico</label><input class="input" id="email" name="email" type="email" value="<%= datos.email || '' %>" required></div>
+  <div><label class="label" for="telefono">Teléfono (opcional)</label><input class="input" id="telefono" name="telefono" value="<%= datos.telefono || '' %>"></div>
+  <div><label class="label" for="mensaje">Mensaje</label><textarea class="input" id="mensaje" name="mensaje" rows="5" minlength="10" required><%= datos.mensaje || '' %></textarea></div>
+  <button class="btn">Enviar mensaje</button>
+</form>

@@ -1,0 +1,31 @@
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<h1 class="titulo-seccion">Casas en venta <span class="font-normal text-slate-500">(<%= total %> resultados)</span></h1>
+
+<% if (casas.length) { %>
+  <%# Mapa con la ubicación de las casas de esta búsqueda %>
+  <div id="mapa" class="mb-4 h-72 w-full rounded border"></div>
+
+  <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+    <% casas.forEach((casa) => { %><%- include('../partials/casa-card', { casa }) %><% }) %>
+  </div>
+  <%- include('../partials/paginacion') %>
+<% } else { %>
+  <p class="rounded bg-slate-50 p-4 text-sm text-slate-600">No encontramos casas con esos criterios. Intenta ampliar el rango de precio o quitar filtros.</p>
+<% } %>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  (function () {
+    const el = document.getElementById('mapa');
+    if (!el) return;
+    const marcadores = <%- JSON.stringify(marcadores).replace(/</g, '\\u003c') %>;
+    const mapa = L.map('mapa').setView([25.4, -101], 6);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(mapa);
+    if (!marcadores.length) return;
+    const grupo = L.featureGroup(marcadores.map((m) =>
+      L.marker([m.lat, m.lng]).bindPopup('<a href="/casas/' + m.id + '">' + m.titulo.replace(/[<>&]/g, '') + '</a>')
+    )).addTo(mapa);
+    mapa.fitBounds(grupo.getBounds().pad(0.2), { maxZoom: 14 });
+  })();
+</script>

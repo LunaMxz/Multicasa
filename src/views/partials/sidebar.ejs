@@ -1,0 +1,19 @@
+<%# TODO(PSD): columna derecha del diseño: menú rápido, buscador, información de última hora %>
+<aside class="space-y-4">
+  <nav class="overflow-hidden rounded bg-brand text-sm font-semibold text-white shadow">
+    <% [['/casas', 'COMPRA'], ['/servicios', 'CONSTRUIR'], ['/casas', 'VENTA'], ['/servicios', 'MUDANZAS'], ['/servicios', 'SEGUROS'], ['/contacto', 'CONTACTOS']].forEach(([href, label]) => { %>
+      <a href="<%= href %>" class="block border-b border-white/20 px-4 py-2 text-right hover:bg-brand-light"><%= label %></a>
+    <% }) %>
+  </nav>
+
+  <%- include('buscador') %>
+
+  <section class="rounded bg-brand p-4 text-white shadow">
+    <h3 class="mb-2 text-sm font-bold">Información de última hora</h3>
+    <ul class="space-y-2 text-xs">
+      <li>Nuevo convenio a casas ecológicas. <a href="/servicios" class="text-leaf hover:underline">Ver más…</a></li>
+      <li>Conoce nuestros planes de descuento para trabajadores. <a href="/servicios" class="text-leaf hover:underline">Ver más…</a></li>
+      <li>Entérate cómo puedes pagar tu mensualidad si te encuentras en el extranjero. <a href="/servicios" class="text-leaf hover:underline">Ver más…</a></li>
+    </ul>
+  </section>
+</aside>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= titulo %> | Admin Multicasa</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <%- style %>
+</head>
+<body class="min-h-screen bg-slate-100 text-slate-800">
+  <header class="bg-brand-dark text-white">
+    <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-3 py-3">
+      <a href="/admin" class="font-bold">Multicasa · Administración</a>
+      <% if (usuario) { %>
+        <nav class="flex flex-wrap items-center gap-4 text-sm">
+          <a href="/admin/dashboard" class="hover:underline">Dashboard</a>
+          <a href="/admin/casas" class="hover:underline">Casas</a>
+          <a href="/admin/reporte.pdf" target="_blank" class="hover:underline">Reporte PDF</a>
+          <a href="/" class="hover:underline">Ver sitio</a>
+          <form action="/admin/logout" method="post"><button class="rounded bg-white/15 px-3 py-1 hover:bg-white/25">Salir (<%= usuario.nombre %>)</button></form>
+        </nav>
+      <% } %>
+    </div>
+  </header>
+  <main class="mx-auto max-w-6xl p-3">
+    <%- include('../partials/flash') %>
+    <%- body %>
+  </main>
+  <%- script %>
+</body>
+</html>

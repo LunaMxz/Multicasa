@@ -1,0 +1,7 @@
+<% if (totalPaginas > 1) { %>
+  <nav class="mt-6 flex flex-wrap justify-center gap-1 text-sm" aria-label="Paginación">
+    <% for (let p = 1; p <= totalPaginas; p++) { %>
+      <a href="/casas?<%= qs ? qs + '&' : '' %>pagina=<%= p %>" class="rounded border px-3 py-1 <%= p === pagina ? 'bg-brand text-white' : 'bg-white hover:bg-slate-100' %>"><%= p %></a>
+    <% } %>
+  </nav>
+<% } %>

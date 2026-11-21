@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= titulo %> | Multicasa</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <%- style %>
+</head>
+<body class="bg-slate-100 text-slate-800">
+  <%- include('../partials/header') %>
+
+  <main class="mx-auto my-4 grid max-w-6xl gap-6 px-3 lg:grid-cols-[1fr_17rem]">
+    <section class="min-w-0 bg-white p-4 shadow">
+      <%- include('../partials/flash') %>
+      <%- body %>
+    </section>
+    <%- include('../partials/sidebar') %>
+  </main>
+
+  <%- include('../partials/footer') %>
+  <%- script %>
+</body>
+</html>

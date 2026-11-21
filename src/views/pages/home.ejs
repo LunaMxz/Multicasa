@@ -1,0 +1,44 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11.1.14/swiper-bundle.min.css">
+
+<%# TODO(PSD): slider en la sección marcada del diseño %>
+<div class="swiper h-64 w-full overflow-hidden rounded sm:h-72">
+  <div class="swiper-wrapper">
+    <% slides.forEach((s) => { %>
+      <a href="<%= s.href %>" class="swiper-slide block">
+        <img src="<%= s.src %>" alt="<%= s.titulo %>" class="h-full w-full object-cover">
+      </a>
+    <% }) %>
+  </div>
+  <div class="swiper-pagination"></div>
+</div>
+
+<div class="mt-6 text-center">
+  <h1 class="text-2xl font-bold text-accent">BIENVENIDO</h1>
+  <p class="text-sm text-slate-500">¡A nuestro sitio WEB de Multicasa!</p>
+</div>
+
+<div class="mt-4 flex items-start gap-4">
+  <img src="/img/icono_fotos.png" alt="" class="h-20 w-auto">
+  <p class="text-sm leading-relaxed text-slate-600">
+    <%# TODO: texto de bienvenida real %>
+    Texto de bienvenida. Sustituir con la presentación de la empresa: quiénes somos, qué ofrecemos y por qué elegir Multicasa para comprar, construir o vender tu propiedad.
+  </p>
+</div>
+
+<h2 class="titulo-seccion mt-8">Servicios destacados</h2>
+<% if (destacadas.length) { %>
+  <div class="grid gap-4 sm:grid-cols-2">
+    <% destacadas.forEach((casa) => { %><%- include('../partials/casa-card', { casa }) %><% }) %>
+  </div>
+<% } else { %>
+  <p class="text-sm text-slate-500">Aún no hay casas publicadas.</p>
+<% } %>
+
+<script src="https://cdn.jsdelivr.net/npm/swiper@11.1.14/swiper-bundle.min.js"></script>
+<script>
+  new Swiper('.swiper', {
+    loop: document.querySelectorAll('.swiper-slide').length > 1,
+    autoplay: { delay: 4000, disableOnInteraction: false },
+    pagination: { el: '.swiper-pagination', clickable: true },
+  });
+</script>

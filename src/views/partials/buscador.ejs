@@ -1,0 +1,35 @@
+<%# Formulario de búsqueda. Usa la variable `filtros` para conservar lo que escribió el usuario %>
+<form action="/casas" method="get" class="space-y-3 rounded bg-brand p-4 text-white shadow">
+  <h3 class="text-sm font-bold">Encuentra tu futura propiedad</h3>
+  <div>
+    <label class="mb-1 block text-xs font-semibold" for="q">Ciudad y Estado, o C.P.</label>
+    <input id="q" name="q" value="<%= filtros.q || '' %>" class="w-full rounded px-2 py-1 text-sm text-slate-800" placeholder="Saltillo, 25000…">
+  </div>
+  <div class="grid grid-cols-2 gap-2">
+    <div>
+      <label class="mb-1 block text-xs font-semibold" for="precioMin">Precio desde</label>
+      <input id="precioMin" name="precioMin" type="number" min="0" step="10000" value="<%= filtros.precioMin ?? '' %>" class="w-full rounded px-2 py-1 text-sm text-slate-800">
+    </div>
+    <div>
+      <label class="mb-1 block text-xs font-semibold" for="precioMax">Hasta</label>
+      <input id="precioMax" name="precioMax" type="number" min="0" step="10000" value="<%= filtros.precioMax ?? '' %>" class="w-full rounded px-2 py-1 text-sm text-slate-800">
+    </div>
+  </div>
+  <div class="grid grid-cols-2 gap-2">
+    <div>
+      <label class="mb-1 block text-xs font-semibold" for="recamaras">Recámaras</label>
+      <select id="recamaras" name="recamaras" class="w-full rounded px-2 py-1 text-sm text-slate-800">
+        <option value="">No importa</option>
+        <% [1, 2, 3, 4, 5].forEach((n) => { %><option value="<%= n %>" <%= Number(filtros.recamaras) === n ? 'selected' : '' %>><%= n %>+</option><% }) %>
+      </select>
+    </div>
+    <div>
+      <label class="mb-1 block text-xs font-semibold" for="banos">Baños</label>
+      <select id="banos" name="banos" class="w-full rounded px-2 py-1 text-sm text-slate-800">
+        <option value="">No importa</option>
+        <% [1, 2, 3, 4].forEach((n) => { %><option value="<%= n %>" <%= Number(filtros.banos) === n ? 'selected' : '' %>><%= n %>+</option><% }) %>
+      </select>
+    </div>
+  </div>
+  <button class="w-full rounded bg-accent px-4 py-2 text-sm font-bold text-white hover:opacity-90">Buscar</button>
+</form>
