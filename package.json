@@ -13,7 +13,9 @@
     "dev:css": "tailwindcss -i ./src/input.css -o ./public/css/styles.css --watch",
     "build:css": "tailwindcss -i ./src/input.css -o ./public/css/styles.css --minify",
     "db:init": "node src/database/init.js",
-    "db:reset": "node src/database/init.js --force"
+    "db:reset": "node src/database/init.js --force",
+    "admin:password": "node src/database/cambiar-password.js",
+    "test": "node --test --test-concurrency=1 tests/*.test.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

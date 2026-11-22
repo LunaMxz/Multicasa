@@ -8,6 +8,8 @@
 <% } %>
 
 <form action="<%= editando ? '/admin/casas/' + casa.id + '/editar' : '/admin/casas' %>" method="post" enctype="multipart/form-data" class="grid gap-3 rounded bg-white p-4 shadow md:grid-cols-2">
+  <%# _csrf debe ir PRIMERO: multer lo lee antes que los archivos %>
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
   <div class="md:col-span-2"><label class="label" for="titulo">Título *</label><input class="input" id="titulo" name="titulo" value="<%= v('titulo') %>" required></div>
   <div class="md:col-span-2"><label class="label" for="descripcion">Descripción</label><textarea class="input" id="descripcion" name="descripcion" rows="4"><%= v('descripcion') %></textarea></div>
   <div><label class="label" for="precio">Precio (MXN) *</label><input class="input" id="precio" name="precio" type="number" min="1" step="1000" value="<%= v('precio') %>" required></div>
@@ -44,7 +46,7 @@
         <img src="<%= i.miniatura %>" alt="" class="h-28 w-full rounded object-cover">
         <div class="mt-2 flex items-center justify-between text-xs">
           <span><%= i.esPrincipal ? 'Principal' : '' %></span>
-          <form action="/admin/casas/<%= casa.id %>/imagenes/<%= i.id %>/eliminar" method="post"><button class="btn-peligro">Quitar</button></form>
+          <form action="/admin/casas/<%= casa.id %>/imagenes/<%= i.id %>/eliminar" method="post"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn-peligro">Quitar</button></form>
         </div>
       </div>
     <% }) %>

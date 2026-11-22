@@ -3,6 +3,8 @@ const ImageService = require('./ImageService');
 const { ValidationError } = require('../utils/errors');
 
 const aNumero = (v) => (v === '' || v == null || Number.isNaN(Number(v)) ? null : Number(v));
+const PRECIO_MAX = 1e10; // NUMERIC(12,2) admite < 10,000,000,000
+const ESTATUS = ['venta', 'vendida'];
 const aTexto = (v) => (v == null ? '' : String(v).trim());
 
 class CasaService {
@@ -27,26 +29,40 @@ class CasaService {
       titulo: aTexto(body.titulo),
       descripcion: aTexto(body.descripcion),
       precio: aNumero(body.precio),
-      recamaras: aNumero(body.recamaras) || 0,
-      banos: aNumero(body.banos) || 0,
+      recamaras: aNumero(body.recamaras) ?? 0,
+      banos: aNumero(body.banos) ?? 0,
       ciudad: aTexto(body.ciudad),
       estado: aTexto(body.estado),
       cp: aTexto(body.cp),
       direccion: aTexto(body.direccion),
       latitud: aNumero(body.latitud),
       longitud: aNumero(body.longitud),
-      estatus: ['venta', 'vendida'].includes(body.estatus) ? body.estatus : 'venta',
+      // vacío/ausente => 'venta'; un valor inválido se rechaza en validar() (antes se cambiaba en silencio)
+      estatus: body.estatus == null || body.estatus === '' ? 'venta' : String(body.estatus),
     };
   }
 
   validar(d) {
     const errores = [];
+    const largo = (valor, max, etiqueta) => { if (valor.length > max) errores.push(`${etiqueta} no debe exceder ${max} caracteres.`); };
+
     if (!d.titulo) errores.push('El título es obligatorio.');
+    largo(d.titulo, 150, 'El título');
+    largo(d.descripcion, 5000, 'La descripción');
     if (d.precio == null || d.precio <= 0) errores.push('El precio debe ser mayor a 0.');
+    else if (d.precio >= PRECIO_MAX) errores.push('El precio es demasiado alto.');
+    if (!Number.isInteger(d.recamaras) || d.recamaras < 0 || d.recamaras > 99) errores.push('Las recámaras deben ser un entero entre 0 y 99.');
+    if (!Number.isInteger(d.banos) || d.banos < 0 || d.banos > 99) errores.push('Los baños deben ser un entero entre 0 y 99.');
     if (!d.ciudad) errores.push('La ciudad es obligatoria.');
+    largo(d.ciudad, 80, 'La ciudad');
     if (!d.estado) errores.push('El estado es obligatorio.');
+    largo(d.estado, 80, 'El estado');
+    if (d.cp && !/^\d{5}$/.test(d.cp)) errores.push('El C.P. debe tener 5 dígitos.');
+    largo(d.direccion, 200, 'La dirección');
+    if (!ESTATUS.includes(d.estatus)) errores.push('El estatus debe ser "venta" o "vendida".');
     if (d.latitud != null && (d.latitud < -90 || d.latitud > 90)) errores.push('Latitud fuera de rango.');
     if (d.longitud != null && (d.longitud < -180 || d.longitud > 180)) errores.push('Longitud fuera de rango.');
+    if ((d.latitud == null) !== (d.longitud == null)) errores.push('Latitud y longitud deben capturarse juntas.');
     return errores;
   }
 
@@ -78,13 +94,21 @@ class CasaService {
   }
 
   // ----- Mantenimiento (altas, bajas, cambios) -----
+  // Orden: validar datos -> procesar imágenes -> escribir en BD. Así una imagen inválida
+  // nunca deja una casa a medias, y si la BD falla se borran los archivos ya generados.
   async crear(body, files = []) {
     const datos = this.extraerDatos(body);
     const errores = this.validar(datos);
     if (errores.length) throw new ValidationError(errores);
-    const casa = await this.repo.crear(datos);
-    await this.guardarImagenes(casa.id, files);
-    return this.repo.findById(casa.id);
+    const procesadas = await this.imagenes.procesar(files);
+    try {
+      const casa = await this.repo.crear(datos);
+      await this.registrarImagenes(casa.id, procesadas);
+      return await this.repo.findById(casa.id);
+    } catch (e) {
+      for (const img of procesadas) await this.imagenes.borrar(img);
+      throw e;
+    }
   }
 
   async actualizar(id, body, files = []) {
@@ -93,9 +117,15 @@ class CasaService {
     const datos = this.extraerDatos(body);
     const errores = this.validar(datos);
     if (errores.length) throw new ValidationError(errores);
-    await this.repo.actualizar(casa, datos);
-    await this.guardarImagenes(casa.id, files);
-    return this.repo.findById(casa.id);
+    const procesadas = await this.imagenes.procesar(files);
+    try {
+      await this.repo.actualizar(casa, datos);
+      await this.registrarImagenes(casa.id, procesadas);
+      return await this.repo.findById(casa.id);
+    } catch (e) {
+      for (const img of procesadas) await this.imagenes.borrar(img);
+      throw e;
+    }
   }
 
   async eliminar(id) {
@@ -106,9 +136,8 @@ class CasaService {
     return true;
   }
 
-  async guardarImagenes(casaId, files) {
-    if (!files || !files.length) return;
-    const procesadas = await this.imagenes.procesar(files);
+  async registrarImagenes(casaId, procesadas) {
+    if (!procesadas.length) return;
     let hayPrincipal = await this.repo.tienePrincipal(casaId);
     const registros = procesadas.map((img) => {
       const esPrincipal = !hayPrincipal;

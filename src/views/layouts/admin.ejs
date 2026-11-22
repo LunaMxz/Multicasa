@@ -17,7 +17,7 @@
           <a href="/admin/casas" class="hover:underline">Casas</a>
           <a href="/admin/reporte.pdf" target="_blank" class="hover:underline">Reporte PDF</a>
           <a href="/" class="hover:underline">Ver sitio</a>
-          <form action="/admin/logout" method="post"><button class="rounded bg-white/15 px-3 py-1 hover:bg-white/25">Salir (<%= usuario.nombre %>)</button></form>
+          <form action="/admin/logout" method="post"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="rounded bg-white/15 px-3 py-1 hover:bg-white/25">Salir (<%= usuario.nombre %>)</button></form>
         </nav>
       <% } %>
     </div>

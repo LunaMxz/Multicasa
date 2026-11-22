@@ -1,0 +1,804 @@
+{
+  "info": {
+    "name": "Multicasa API REST",
+    "description": "Colección de pruebas de la API de Multicasa (Michelle). Ejecutar en orden con el Collection Runner. Variables: baseUrl (por defecto http://localhost:3000), adminEmail, adminPassword. Las rutas protegidas usan la sesión (cookie) del administrador: Postman la guarda solo.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "adminEmail",
+      "value": "admin@multicasa.com"
+    },
+    {
+      "key": "adminPassword",
+      "value": "Admin123!"
+    },
+    {
+      "key": "csrf",
+      "value": ""
+    },
+    {
+      "key": "casaId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Públicas (sin sesión)",
+      "item": [
+        {
+          "name": "GET /api/casas → 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/casas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "casas"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 200', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Estructura {total,pagina,totalPaginas,resultados}', () => { pm.expect(j).to.have.all.keys('total','pagina','totalPaginas','resultados'); });",
+                  "pm.test('Solo casas en venta', () => j.resultados.forEach(c => pm.expect(c.estatus).to.eql('venta')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /api/casas?q=Saltillo&precioMax=3000000 → 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/casas?q=Saltillo&precioMax=3000000",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "casas"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "Saltillo"
+                },
+                {
+                  "key": "precioMax",
+                  "value": "3000000"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /api/casas/999999 → 404",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/casas/999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "casas",
+                "999999"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Mensaje', () => pm.expect(pm.response.json().error).to.eql('Casa no encontrada'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /api/no-existe → 404 JSON",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/no-existe",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "no-existe"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Es JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Protegidas SIN sesión → 401",
+      "item": [
+        {
+          "name": "POST /api/casas → 401",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/casas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "casas"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Casa Postman\",\n  \"descripcion\": \"Creada desde Postman\",\n  \"precio\": 1800000,\n  \"recamaras\": 3,\n  \"banos\": 2,\n  \"ciudad\": \"Saltillo\",\n  \"estado\": \"Coahuila\",\n  \"cp\": \"25000\",\n  \"latitud\": 25.4232,\n  \"longitud\": -100.9737,\n  \"estatus\": \"venta\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT /api/casas/1 → 401",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/casas/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "casas",
+                "1"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Casa Postman\",\n  \"descripcion\": \"Creada desde Postman\",\n  \"precio\": 1800000,\n  \"recamaras\": 3,\n  \"banos\": 2,\n  \"ciudad\": \"Saltillo\",\n  \"estado\": \"Coahuila\",\n  \"cp\": \"25000\",\n  \"latitud\": 25.4232,\n  \"longitud\": -100.9737,\n  \"estatus\": \"venta\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "DELETE /api/casas/1 → 401",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/casas/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "casas",
+                "1"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /api/estadisticas → 401",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/estadisticas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "estadisticas"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. Inicio de sesión de administrador",
+      "item": [
+        {
+          "name": "GET /admin/login (obtiene token CSRF)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "login"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 200', () => pm.response.to.have.status(200));",
+                  "const m = pm.response.text().match(/name=\"_csrf\" value=\"([0-9a-f]+)\"/);",
+                  "pm.test('Token CSRF presente', () => pm.expect(m).to.not.be.null);",
+                  "if (m) pm.collectionVariables.set('csrf', m[1]);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /admin/login → 302 al dashboard",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "_csrf",
+                  "value": "{{csrf}}"
+                },
+                {
+                  "key": "email",
+                  "value": "{{adminEmail}}"
+                },
+                {
+                  "key": "password",
+                  "value": "{{adminPassword}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 302', () => pm.response.to.have.status(302));",
+                  "pm.test('Redirige al dashboard', () => pm.expect(pm.response.headers.get('Location')).to.eql('/admin/dashboard'));"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. CRUD con sesión de administrador",
+      "item": [
+        {
+          "name": "POST /api/casas → 201",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/casas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "casas"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Casa Postman\",\n  \"descripcion\": \"Creada desde Postman\",\n  \"precio\": 1800000,\n  \"recamaras\": 3,\n  \"banos\": 2,\n  \"ciudad\": \"Saltillo\",\n  \"estado\": \"Coahuila\",\n  \"cp\": \"25000\",\n  \"latitud\": 25.4232,\n  \"longitud\": -100.9737,\n  \"estatus\": \"venta\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 201', () => pm.response.to.have.status(201));",
+                  "const j = pm.response.json();",
+                  "pm.test('Devuelve id y datos', () => { pm.expect(j.id).to.be.a('number'); pm.expect(j.titulo).to.eql('Casa Postman'); });",
+                  "pm.collectionVariables.set('casaId', j.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /api/casas inválida → 422",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/casas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "casas"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"\",\n  \"descripcion\": \"Creada desde Postman\",\n  \"precio\": -5,\n  \"recamaras\": 3,\n  \"banos\": 2,\n  \"ciudad\": \"Saltillo\",\n  \"estado\": \"Coahuila\",\n  \"cp\": \"25000\",\n  \"latitud\": 25.4232,\n  \"longitud\": -100.9737,\n  \"estatus\": \"otra\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 422', () => pm.response.to.have.status(422));",
+                  "pm.test('Lista de errores', () => pm.expect(pm.response.json().errores).to.be.an('array').that.is.not.empty);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /api/casas con form-urlencoded → 415",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/casas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "casas"
+              ]
+            },
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "titulo",
+                  "value": "x"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 415', () => pm.response.to.have.status(415));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /api/casas/{{casaId}} → 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/casas/{{casaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "casas",
+                "{{casaId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Es la casa creada', () => pm.expect(pm.response.json().titulo).to.eql('Casa Postman'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT /api/casas/{{casaId}} → 200",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/casas/{{casaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "casas",
+                "{{casaId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Casa Postman editada\",\n  \"descripcion\": \"Creada desde Postman\",\n  \"precio\": 2100000,\n  \"recamaras\": 3,\n  \"banos\": 2,\n  \"ciudad\": \"Saltillo\",\n  \"estado\": \"Coahuila\",\n  \"cp\": \"25000\",\n  \"latitud\": 25.4232,\n  \"longitud\": -100.9737,\n  \"estatus\": \"venta\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Título actualizado', () => pm.expect(pm.response.json().titulo).to.eql('Casa Postman editada'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT /api/casas/999999 → 404",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/casas/999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "casas",
+                "999999"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Casa Postman\",\n  \"descripcion\": \"Creada desde Postman\",\n  \"precio\": 1800000,\n  \"recamaras\": 3,\n  \"banos\": 2,\n  \"ciudad\": \"Saltillo\",\n  \"estado\": \"Coahuila\",\n  \"cp\": \"25000\",\n  \"latitud\": 25.4232,\n  \"longitud\": -100.9737,\n  \"estatus\": \"venta\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 404', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT /api/casas/{{casaId}} inválida → 422",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/casas/{{casaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "casas",
+                "{{casaId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Casa Postman\",\n  \"descripcion\": \"Creada desde Postman\",\n  \"precio\": 0,\n  \"recamaras\": 3,\n  \"banos\": 2,\n  \"ciudad\": \"Saltillo\",\n  \"estado\": \"Coahuila\",\n  \"cp\": \"25000\",\n  \"latitud\": 25.4232,\n  \"longitud\": -100.9737,\n  \"estatus\": \"venta\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 422', () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /api/estadisticas → 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/estadisticas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "estadisticas"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 200', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Estructura', () => { pm.expect(j.estatus).to.have.all.keys('venta','vendida'); pm.expect(j.porRango).to.be.an('array').with.lengthOf(5); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "DELETE /api/casas/{{casaId}} → 204",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/casas/{{casaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "casas",
+                "{{casaId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 204', () => pm.response.to.have.status(204));",
+                  "pm.test('Sin cuerpo', () => pm.expect(pm.response.text()).to.eql(''));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /api/casas/{{casaId}} (ya borrada) → 404",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/casas/{{casaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "casas",
+                "{{casaId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 404', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "DELETE /api/casas/{{casaId}} (otra vez) → 404",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/casas/{{casaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "casas",
+                "{{casaId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 404', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

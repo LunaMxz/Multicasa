@@ -20,6 +20,7 @@
           <td class="flex gap-2 p-2">
             <a href="/admin/casas/<%= c.id %>/editar" class="btn-secundario !px-3 !py-1 !text-xs">Editar</a>
             <form action="/admin/casas/<%= c.id %>/eliminar" method="post" onsubmit="return confirm('¿Eliminar esta casa y sus fotos?')">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
               <button class="btn-peligro">Eliminar</button>
             </form>
           </td>

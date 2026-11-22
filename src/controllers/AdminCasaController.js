@@ -16,6 +16,7 @@ class AdminCasaController {
 
   crear = async (req, res) => {
     try {
+      this.lanzarErrorDeSubida(req);
       await this.service.crear(req.body, req.files);
       req.session.flash = { tipo: 'ok', mensaje: 'Casa creada correctamente.' };
       return res.redirect('/admin/casas');
@@ -33,6 +34,7 @@ class AdminCasaController {
 
   actualizar = async (req, res) => {
     try {
+      this.lanzarErrorDeSubida(req);
       const casa = await this.service.actualizar(req.params.id, req.body, req.files);
       if (!casa) return res.status(404).render('pages/404', { titulo: 'No encontrada' });
       req.session.flash = { tipo: 'ok', mensaje: 'Casa actualizada.' };
@@ -56,6 +58,11 @@ class AdminCasaController {
     await this.service.eliminarImagen(req.params.id, req.params.imagenId);
     res.redirect(`/admin/casas/${req.params.id}/editar`);
   };
+
+  /** Si el middleware de subida detectó un archivo inválido, se reporta como error de formulario (422). */
+  lanzarErrorDeSubida(req) {
+    if (req.erroresSubida) throw new ValidationError(req.erroresSubida);
+  }
 }
 
 module.exports = AdminCasaController;
