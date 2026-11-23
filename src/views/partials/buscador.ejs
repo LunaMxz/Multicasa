@@ -1,35 +1,146 @@
-<%# Formulario de búsqueda. Usa la variable `filtros` para conservar lo que escribió el usuario %>
-<form action="/casas" method="get" class="space-y-3 rounded bg-brand p-4 text-white shadow">
-  <h3 class="text-sm font-bold">Encuentra tu futura propiedad</h3>
+
+<form action="/casas" method="get"
+      id="formBuscador"
+      class="space-y-4 rounded-lg bg-brand p-4 text-white shadow">
+
   <div>
-    <label class="mb-1 block text-xs font-semibold" for="q">Ciudad y Estado, o C.P.</label>
-    <input id="q" name="q" value="<%= filtros.q || '' %>" class="w-full rounded px-2 py-1 text-sm text-slate-800" placeholder="Saltillo, 25000…">
+    <h3 class="text-base font-bold">
+      Encuentra tu futura propiedad
+    </h3>
+    <p class="mt-1 text-xs text-blue-100">
+      Busca casas por ubicación, precio y características.
+    </p>
   </div>
-  <div class="grid grid-cols-2 gap-2">
+
+  <div>
+    <label for="q" class="mb-1 block text-xs font-semibold">
+      Ciudad, estado o código postal
+    </label>
+    <input
+      id="q"
+      name="q"
+      type="search"
+      value="<%= filtros.q || '' %>"
+      placeholder="Ej. Saltillo, Coahuila, 25000"
+      class="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:ring-2 focus:ring-orange-400"
+    >
+  </div>
+
+  <div class="grid grid-cols-2 gap-3">
     <div>
-      <label class="mb-1 block text-xs font-semibold" for="precioMin">Precio desde</label>
-      <input id="precioMin" name="precioMin" type="number" min="0" step="10000" value="<%= filtros.precioMin ?? '' %>" class="w-full rounded px-2 py-1 text-sm text-slate-800">
+      <label for="precioMin" class="mb-1 block text-xs font-semibold">
+        Precio mínimo
+      </label>
+      <input
+        id="precioMin"
+        name="precioMin"
+        type="number"
+        min="0"
+        step="1000"
+        placeholder="$ Desde"
+        value="<%= filtros.precioMin ?? '' %>"
+        class="w-full rounded-md bg-white px-3 py-2 text-sm text-slate-800"
+      >
     </div>
+
     <div>
-      <label class="mb-1 block text-xs font-semibold" for="precioMax">Hasta</label>
-      <input id="precioMax" name="precioMax" type="number" min="0" step="10000" value="<%= filtros.precioMax ?? '' %>" class="w-full rounded px-2 py-1 text-sm text-slate-800">
+      <label for="precioMax" class="mb-1 block text-xs font-semibold">
+        Precio máximo
+      </label>
+      <input
+        id="precioMax"
+        name="precioMax"
+        type="number"
+        min="0"
+        step="1000"
+        placeholder="$ Hasta"
+        value="<%= filtros.precioMax ?? '' %>"
+        class="w-full rounded-md bg-white px-3 py-2 text-sm text-slate-800"
+      >
     </div>
   </div>
-  <div class="grid grid-cols-2 gap-2">
+
+  <div class="grid grid-cols-2 gap-3">
     <div>
-      <label class="mb-1 block text-xs font-semibold" for="recamaras">Recámaras</label>
-      <select id="recamaras" name="recamaras" class="w-full rounded px-2 py-1 text-sm text-slate-800">
+      <label for="recamaras" class="mb-1 block text-xs font-semibold">
+        Recámaras
+      </label>
+      <select
+        id="recamaras"
+        name="recamaras"
+        class="w-full rounded-md bg-white px-3 py-2 text-sm text-slate-800"
+      >
         <option value="">No importa</option>
-        <% [1, 2, 3, 4, 5].forEach((n) => { %><option value="<%= n %>" <%= Number(filtros.recamaras) === n ? 'selected' : '' %>><%= n %>+</option><% }) %>
+        <% [1,2,3,4,5].forEach((n) => { %>
+          <option value="<%= n %>"
+            <%= Number(filtros.recamaras) === n ? 'selected' : '' %>>
+            <%= n %> o más
+          </option>
+        <% }); %>
       </select>
     </div>
+
     <div>
-      <label class="mb-1 block text-xs font-semibold" for="banos">Baños</label>
-      <select id="banos" name="banos" class="w-full rounded px-2 py-1 text-sm text-slate-800">
+      <label for="banos" class="mb-1 block text-xs font-semibold">
+        Baños
+      </label>
+      <select
+        id="banos"
+        name="banos"
+        class="w-full rounded-md bg-white px-3 py-2 text-sm text-slate-800"
+      >
         <option value="">No importa</option>
-        <% [1, 2, 3, 4].forEach((n) => { %><option value="<%= n %>" <%= Number(filtros.banos) === n ? 'selected' : '' %>><%= n %>+</option><% }) %>
+        <% [1,2,3,4].forEach((n) => { %>
+          <option value="<%= n %>"
+            <%= Number(filtros.banos) === n ? 'selected' : '' %>>
+            <%= n %> o más
+          </option>
+        <% }); %>
       </select>
     </div>
   </div>
-  <button class="w-full rounded bg-accent px-4 py-2 text-sm font-bold text-white hover:opacity-90">Buscar</button>
+
+  <p id="errorPrecios"
+     class="hidden rounded-md bg-red-100 p-2 text-xs text-red-800"
+     role="alert">
+    El precio mínimo no puede ser mayor al precio máximo.
+  </p>
+
+  <button type="submit"
+          class="w-full rounded-md bg-accent px-4 py-3 text-sm font-bold text-white transition hover:opacity-90">
+    Buscar propiedades
+  </button>
+
+  <a href="/casas"
+     class="block rounded-md border border-white/30 px-4 py-2 text-center text-xs font-semibold text-white transition hover:bg-white/10">
+    Limpiar filtros
+  </a>
 </form>
+
+<script>
+(function () {
+  const form = document.getElementById('formBuscador');
+  if (!form) return;
+
+  const minimo = form.querySelector('#precioMin');
+  const maximo = form.querySelector('#precioMax');
+  const mensaje = form.querySelector('#errorPrecios');
+
+  form.addEventListener('submit', function (event) {
+    const min = minimo.value === '' ? null : Number(minimo.value);
+    const max = maximo.value === '' ? null : Number(maximo.value);
+
+    const invalido =
+      (min !== null && (!Number.isFinite(min) || min < 0)) ||
+      (max !== null && (!Number.isFinite(max) || max < 0)) ||
+      (min !== null && max !== null && min > max);
+
+    mensaje.classList.toggle('hidden', !invalido);
+
+    if (invalido) {
+      event.preventDefault();
+      maximo.focus();
+    }
+  });
+})();
+</script>

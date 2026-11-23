@@ -1,31 +1,337 @@
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
-<h1 class="titulo-seccion">Casas en venta <span class="font-normal text-slate-500">(<%= total %> resultados)</span></h1>
+<!-- Estilos de Leaflet -->
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+>
 
-<% if (casas.length) { %>
-  <%# Mapa con la ubicación de las casas de esta búsqueda %>
-  <div id="mapa" class="mb-4 h-72 w-full rounded border"></div>
+<style>
+  .mc-contenedor {
+    background: #ffffff;
+    padding: 16px;
+    border-radius: 8px;
+    min-height: 350px;
+  }
 
-  <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-    <% casas.forEach((casa) => { %><%- include('../partials/casa-card', { casa }) %><% }) %>
+  .mc-mapa {
+    height: 320px;
+    width: 100%;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    z-index: 0;
+  }
+
+  .mc-encabezado {
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #205f94;
+  }
+
+  .mc-sin-resultados {
+    padding: 30px;
+    text-align: center;
+    background: #f8fafc;
+    border-radius: 8px;
+  }
+
+  .mc-error {
+    margin-bottom: 16px;
+    padding: 12px;
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+  }
+</style>
+
+<div class="mc-contenedor">
+
+  <!-- Encabezado -->
+  <div class="mc-encabezado">
+    <h1 class="text-xl font-bold text-brand-dark">
+      Casas en venta
+    </h1>
+
+    <p class="mt-1 text-sm text-slate-500">
+      <%= total %>
+      <%= total === 1
+        ? 'propiedad encontrada'
+        : 'propiedades encontradas' %>
+    </p>
   </div>
-  <%- include('../partials/paginacion') %>
-<% } else { %>
-  <p class="rounded bg-slate-50 p-4 text-sm text-slate-600">No encontramos casas con esos criterios. Intenta ampliar el rango de precio o quitar filtros.</p>
-<% } %>
 
+  <!-- Errores de los filtros -->
+  <% if (typeof erroresFiltros !== 'undefined' &&
+         erroresFiltros.length > 0) { %>
+
+    <div class="mc-error" role="alert">
+      <strong>Revisa los filtros:</strong>
+
+      <ul class="mt-2 list-inside list-disc">
+        <% erroresFiltros.forEach(function(error) { %>
+          <li><%= error %></li>
+        <% }); %>
+      </ul>
+    </div>
+
+  <% } %>
+
+  <!-- Resultados -->
+  <% if (casas && casas.length > 0) { %>
+
+    <!-- Mapa -->
+    <section class="mb-5">
+
+      <div class="mb-3 flex items-center justify-between">
+        <h2 class="text-sm font-bold text-brand-dark">
+          Ubicación de propiedades
+        </h2>
+
+        <span
+          id="contadorMarcadores"
+          class="text-xs text-slate-500"
+        >
+          Cargando mapa...
+        </span>
+      </div>
+
+      <div id="mapa" class="mc-mapa"></div>
+
+      <p class="mt-2 text-xs text-slate-500">
+        Selecciona un marcador para consultar los detalles.
+        Las coordenadas de ejemplo son aproximadas.
+      </p>
+
+    </section>
+
+    <!-- Tarjetas de casas -->
+    <section>
+
+      <h2 class="mb-3 text-sm font-bold text-brand-dark">
+        Propiedades disponibles
+      </h2>
+
+      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+
+        <% casas.forEach(function(casa) { %>
+
+          <%- include('../partials/casa-card', { casa: casa }) %>
+
+        <% }); %>
+
+      </div>
+
+    </section>
+
+    <!-- Paginación -->
+    <div class="mt-6">
+      <%- include('../partials/paginacion') %>
+    </div>
+
+  <% } else { %>
+
+    <!-- Sin resultados -->
+    <div class="mc-sin-resultados">
+
+      <h2 class="text-lg font-bold text-brand-dark">
+        No encontramos propiedades
+      </h2>
+
+      <p class="mt-2 text-sm text-slate-500">
+        Intenta cambiar la ciudad, el precio
+        o las características de búsqueda.
+      </p>
+
+      <a
+        href="/casas"
+        class="mt-4 inline-block rounded bg-brand px-5 py-2 text-sm font-bold text-white"
+      >
+        Ver todas las propiedades
+      </a>
+
+    </div>
+
+  <% } %>
+
+</div>
+
+<!--
+  Datos JSON de los marcadores.
+  EJS escapa automáticamente el atributo HTML.
+-->
+<div
+  id="datosMarcadores"
+  hidden
+  data-marcadores="<%= JSON.stringify(marcadores || []) %>"
+></div>
+
+<!-- Leaflet -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <script>
-  (function () {
-    const el = document.getElementById('mapa');
-    if (!el) return;
-    const marcadores = <%- JSON.stringify(marcadores).replace(/</g, '\\u003c') %>;
-    const mapa = L.map('mapa').setView([25.4, -101], 6);
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(mapa);
-    if (!marcadores.length) return;
-    const grupo = L.featureGroup(marcadores.map((m) =>
-      L.marker([m.lat, m.lng]).bindPopup('<a href="/casas/' + m.id + '">' + m.titulo.replace(/[<>&]/g, '') + '</a>')
-    )).addTo(mapa);
-    mapa.fitBounds(grupo.getBounds().pad(0.2), { maxZoom: 14 });
-  })();
+(function () {
+  'use strict';
+
+  const elementoMapa = document.getElementById('mapa');
+  const elementoDatos = document.getElementById('datosMarcadores');
+  const contador = document.getElementById('contadorMarcadores');
+
+  // No inicializar si no hay mapa
+  if (!elementoMapa) return;
+
+  if (typeof L === 'undefined') {
+    console.error('Leaflet no está disponible.');
+    if (contador) {
+      contador.textContent = 'No se pudo cargar el mapa';
+    }
+    return;
+  }
+
+  let casasMapa = [];
+
+  try {
+    casasMapa = JSON.parse(
+      elementoDatos?.dataset.marcadores || '[]'
+    );
+
+    if (!Array.isArray(casasMapa)) {
+      casasMapa = [];
+    }
+  } catch (error) {
+    console.error('Error leyendo marcadores:', error);
+    casasMapa = [];
+  }
+
+  // Crear mapa
+  const mapa = L.map(elementoMapa, {
+    zoomControl: true,
+    scrollWheelZoom: false
+  }).setView([25.45, -100.97], 8);
+
+  // Capa de OpenStreetMap
+  L.tileLayer(
+    'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap'
+    }
+  ).addTo(mapa);
+
+  const grupo = L.featureGroup();
+  let cantidad = 0;
+
+  // Marcadores de propiedades
+  casasMapa.forEach(function(casa) {
+
+    if (
+      casa.lat === null ||
+      casa.lng === null ||
+      casa.lat === undefined ||
+      casa.lng === undefined ||
+      casa.lat === '' ||
+      casa.lng === ''
+    ) return;
+
+    const lat = Number(casa.lat);
+    const lng = Number(casa.lng);
+
+    if (
+      !Number.isFinite(lat) ||
+      !Number.isFinite(lng) ||
+      lat < -90 ||
+      lat > 90 ||
+      lng < -180 ||
+      lng > 180
+    ) return;
+
+    const marcador = L.marker([lat, lng]);
+
+    // Ventana informativa
+    const popup = document.createElement('div');
+
+    const titulo = document.createElement('strong');
+    titulo.textContent = casa.titulo || 'Propiedad';
+    titulo.style.display = 'block';
+    titulo.style.color = '#153f68';
+    titulo.style.marginBottom = '6px';
+
+    popup.appendChild(titulo);
+
+    if (casa.ciudad) {
+      const ciudad = document.createElement('p');
+      ciudad.textContent = casa.ciudad;
+      ciudad.style.margin = '4px 0';
+      popup.appendChild(ciudad);
+    }
+
+    if (casa.precio != null) {
+      const precio = document.createElement('p');
+
+      precio.textContent = new Intl.NumberFormat(
+        'es-MX',
+        {
+          style: 'currency',
+          currency: 'MXN',
+          maximumFractionDigits: 0
+        }
+      ).format(Number(casa.precio));
+
+      precio.style.fontWeight = 'bold';
+      precio.style.color = '#ea861d';
+      precio.style.margin = '6px 0';
+
+      popup.appendChild(precio);
+    }
+
+    const enlace = document.createElement('a');
+
+    enlace.href = '/casas/' + encodeURIComponent(casa.id);
+    enlace.textContent = 'Ver propiedad';
+
+    enlace.style.display = 'inline-block';
+    enlace.style.marginTop = '8px';
+    enlace.style.background = '#205f94';
+    enlace.style.color = '#fff';
+    enlace.style.padding = '7px 12px';
+    enlace.style.borderRadius = '5px';
+    enlace.style.textDecoration = 'none';
+
+    popup.appendChild(enlace);
+
+    marcador.bindPopup(popup);
+    marcador.addTo(grupo);
+
+    cantidad++;
+  });
+
+  grupo.addTo(mapa);
+
+  // Centrar mapa
+  if (cantidad === 1) {
+    mapa.setView(grupo.getBounds().getCenter(), 14);
+  } else if (cantidad > 1) {
+    mapa.fitBounds(grupo.getBounds().pad(0.2), {
+      maxZoom: 14
+    });
+  }
+
+  // Contador
+  if (contador) {
+    contador.textContent =
+      cantidad + (cantidad === 1
+        ? ' ubicación'
+        : ' ubicaciones');
+  }
+
+  setTimeout(function () {
+    mapa.invalidateSize();
+  }, 150);
+
+  console.log(
+    'Multicasa: mapa inicializado con',
+    cantidad,
+    'marcadores'
+  );
+
+})();
 </script>
