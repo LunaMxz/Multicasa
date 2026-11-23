@@ -41,3 +41,23 @@ CREATE TABLE imagenes_casa (
   "createdAt"   TIMESTAMPTZ NOT NULL,
   "updatedAt"   TIMESTAMPTZ NOT NULL
 );
+
+
+
+
+-- Índices de optimización para las consultas de Multicasa
+
+CREATE INDEX IF NOT EXISTS idx_casas_ciudad
+ON casas (ciudad);
+
+CREATE INDEX IF NOT EXISTS idx_casas_precio
+ON casas (precio);
+
+CREATE INDEX IF NOT EXISTS idx_casas_estatus
+ON casas (estatus);
+
+CREATE INDEX IF NOT EXISTS idx_casas_estatus_precio
+ON casas (estatus, precio);
+
+CREATE INDEX IF NOT EXISTS idx_casas_fecha
+ON casas ("createdAt" DESC);

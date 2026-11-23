@@ -14,57 +14,109 @@ class CasaService {
   }
 
   // ----- Entrada de datos -----
+
   normalizarFiltros(query = {}) {
+    const texto = (valor) => {
+      return typeof valor === 'string'
+        ? valor.trim().slice(0, 100)
+        : '';
+    };
+
+    const numero = (valor) => {
+      if (
+        typeof valor !== 'string' &&
+        typeof valor !== 'number'
+      ) {
+        return null;
+      }
+
+      if (String(valor).trim() === '') return null;
+
+      const n = Number(valor);
+
+      return Number.isFinite(n) ? n : null;
+    };
+
     return {
-      q: aTexto(query.q),
-      precioMin: aNumero(query.precioMin),
-      precioMax: aNumero(query.precioMax),
-      recamaras: aNumero(query.recamaras),
-      banos: aNumero(query.banos),
+      q: texto(query.q),
+      precioMin: numero(query.precioMin),
+      precioMax: numero(query.precioMax),
+      recamaras: numero(query.recamaras),
+      banos: numero(query.banos)
     };
   }
 
-  extraerDatos(body = {}) {
-    return {
-      titulo: aTexto(body.titulo),
-      descripcion: aTexto(body.descripcion),
-      precio: aNumero(body.precio),
-      recamaras: aNumero(body.recamaras) ?? 0,
-      banos: aNumero(body.banos) ?? 0,
-      ciudad: aTexto(body.ciudad),
-      estado: aTexto(body.estado),
-      cp: aTexto(body.cp),
-      direccion: aTexto(body.direccion),
-      latitud: aNumero(body.latitud),
-      longitud: aNumero(body.longitud),
-      // vacío/ausente => 'venta'; un valor inválido se rechaza en validar() (antes se cambiaba en silencio)
-      estatus: body.estatus == null || body.estatus === '' ? 'venta' : String(body.estatus),
-    };
-  }
-
-  validar(d) {
+  validarFiltros(query = {}) {
     const errores = [];
-    const largo = (valor, max, etiqueta) => { if (valor.length > max) errores.push(`${etiqueta} no debe exceder ${max} caracteres.`); };
 
-    if (!d.titulo) errores.push('El título es obligatorio.');
-    largo(d.titulo, 150, 'El título');
-    largo(d.descripcion, 5000, 'La descripción');
-    if (d.precio == null || d.precio <= 0) errores.push('El precio debe ser mayor a 0.');
-    else if (d.precio >= PRECIO_MAX) errores.push('El precio es demasiado alto.');
-    if (!Number.isInteger(d.recamaras) || d.recamaras < 0 || d.recamaras > 99) errores.push('Las recámaras deben ser un entero entre 0 y 99.');
-    if (!Number.isInteger(d.banos) || d.banos < 0 || d.banos > 99) errores.push('Los baños deben ser un entero entre 0 y 99.');
-    if (!d.ciudad) errores.push('La ciudad es obligatoria.');
-    largo(d.ciudad, 80, 'La ciudad');
-    if (!d.estado) errores.push('El estado es obligatorio.');
-    largo(d.estado, 80, 'El estado');
-    if (d.cp && !/^\d{5}$/.test(d.cp)) errores.push('El C.P. debe tener 5 dígitos.');
-    largo(d.direccion, 200, 'La dirección');
-    if (!ESTATUS.includes(d.estatus)) errores.push('El estatus debe ser "venta" o "vendida".');
-    if (d.latitud != null && (d.latitud < -90 || d.latitud > 90)) errores.push('Latitud fuera de rango.');
-    if (d.longitud != null && (d.longitud < -180 || d.longitud > 180)) errores.push('Longitud fuera de rango.');
-    if ((d.latitud == null) !== (d.longitud == null)) errores.push('Latitud y longitud deben capturarse juntas.');
+    const validarNumero = (campo, etiqueta, entero = false) => {
+      const valor = query[campo];
+
+      if (valor == null || valor === '') return null;
+
+      if (
+        typeof valor !== 'string' ||
+        valor.trim() === ''
+      ) {
+        errores.push(`${etiqueta} debe ser un número válido.`);
+        return null;
+      }
+
+      const n = Number(valor);
+
+      if (
+        !Number.isFinite(n) ||
+        n < 0 ||
+        (entero && !Number.isInteger(n))
+      ) {
+        errores.push(`${etiqueta} debe ser un número válido.`);
+        return null;
+      }
+
+      return n;
+    };
+
+    if (
+      query.q != null &&
+      (typeof query.q !== 'string' || query.q.length > 100)
+    ) {
+      errores.push(
+        'La búsqueda debe contener como máximo 100 caracteres.'
+      );
+    }
+
+    const min = validarNumero('precioMin', 'El precio mínimo');
+    const max = validarNumero('precioMax', 'El precio máximo');
+
+    const recamaras = validarNumero(
+      'recamaras',
+      'Las recámaras',
+      true
+    );
+
+    const banos = validarNumero(
+      'banos',
+      'Los baños',
+      true
+    );
+
+    if (min !== null && max !== null && min > max) {
+      errores.push(
+        'El precio mínimo no puede ser mayor que el máximo.'
+      );
+    }
+
+    if (recamaras !== null && recamaras > 99) {
+      errores.push('Las recámaras no pueden superar 99.');
+    }
+
+    if (banos !== null && banos > 99) {
+      errores.push('Los baños no pueden superar 99.');
+    }
+
     return errores;
   }
+
 
   // ----- Consultas -----
   async buscar(filtros, pagina = 1, porPagina = 9) {
