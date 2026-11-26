@@ -1,8 +1,6 @@
 require('dotenv').config();
 const { Sequelize } = require('sequelize');
 
-// Patrón SINGLETON: Node cachea los módulos, por lo que toda la app
-// comparte esta única instancia de conexión a PostgreSQL.
 const sequelize = new Sequelize(
   process.env.DB_NAME || 'multicasa',
   process.env.DB_USER || 'postgres',

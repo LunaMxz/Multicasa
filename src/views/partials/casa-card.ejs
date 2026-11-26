@@ -1,8 +1,12 @@
 <%# Tarjeta de casa. Uso: include('../partials/casa-card', { casa }) %>
-<% const img = casa.imagenPrincipal(); %>
+<%
+  const img = casa.imagenPrincipal();
+  const numeroCasa = String(casa.id).padStart(2, '0');
+  const fotoPredeterminada = '/img/casas/predeterminadas/casa-' + numeroCasa + '.jpg';
+%>
 <article class="overflow-hidden rounded border bg-white shadow-sm">
   <a href="/casas/<%= casa.id %>">
-    <img src="<%= img ? img.miniatura : '/img/sin-foto.svg' %>" alt="<%= casa.titulo %>" width="400" height="300" loading="lazy" class="h-44 w-full object-cover">
+    <img src="<%= img ? img.miniatura : fotoPredeterminada %>" alt="<%= casa.titulo %>" width="400" height="300" loading="lazy" class="h-44 w-full object-cover">
   </a>
   <div class="space-y-1 p-3">
     <h3 class="text-sm font-bold text-brand-dark"><%= casa.titulo %></h3>

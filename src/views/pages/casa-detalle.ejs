@@ -1,4 +1,9 @@
-<% const imgs = casa.imagenes || []; const principal = casa.imagenPrincipal(); %>
+<%
+  const imgs = casa.imagenes || [];
+  const principal = casa.imagenPrincipal();
+  const numeroCasa = String(casa.id).padStart(2, '0');
+  const fotoPredeterminada = '/img/casas/predeterminadas/casa-' + numeroCasa + '.jpg';
+%>
 <a href="/casas" class="text-xs text-brand hover:underline">&larr; Volver a la búsqueda</a>
 <h1 class="mt-2 text-2xl font-bold text-brand-dark"><%= casa.titulo %></h1>
 <p class="text-2xl font-bold text-accent"><%= moneda(casa.precio) %>
@@ -7,7 +12,7 @@
 
 <%# TODO(PSD): galería de imágenes de la vivienda %>
 <div class="mt-4 grid gap-3 md:grid-cols-[2fr_1fr]">
-  <img src="<%= principal ? principal.ruta : '/img/sin-foto.svg' %>" alt="<%= casa.titulo %>" class="h-72 w-full rounded object-cover">
+  <img src="<%= principal ? principal.ruta : fotoPredeterminada %>" alt="<%= casa.titulo %>" class="h-72 w-full rounded object-cover">
   <div class="grid grid-cols-3 gap-2 md:grid-cols-2">
     <% imgs.slice(0, 6).forEach((i) => { %>
       <a href="<%= i.ruta %>" target="_blank"><img src="<%= i.miniatura %>" alt="" loading="lazy" class="h-20 w-full rounded object-cover"></a>
@@ -32,12 +37,33 @@
 
 <% if (casa.latitud && casa.longitud) { %>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <div id="mapa" class="mt-6 h-64 w-full rounded border"></div>
+
+  <div
+    id="mapa"
+    class="mt-6 h-64 w-full rounded border"
+    data-latitud="<%= Number(casa.latitud) %>"
+    data-longitud="<%= Number(casa.longitud) %>"
+    data-titulo="<%= casa.titulo %>">
+  </div>
+
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
   <script>
-    const pos = [<%= Number(casa.latitud) %>, <%= Number(casa.longitud) %>];
+    const elementoMapa = document.getElementById('mapa');
+
+    const pos = [
+      Number(elementoMapa.dataset.latitud),
+      Number(elementoMapa.dataset.longitud)
+    ];
+
+    const tituloCasa = elementoMapa.dataset.titulo;
+
     const mapa = L.map('mapa').setView(pos, 15);
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(mapa);
-    L.marker(pos).addTo(mapa).bindPopup(<%- JSON.stringify(casa.titulo).replace(/</g, '\\u003c') %>);
+
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap'
+    }).addTo(mapa);
+
+    L.marker(pos).addTo(mapa).bindPopup(tituloCasa);
   </script>
 <% } %>
