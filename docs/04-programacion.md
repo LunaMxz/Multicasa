@@ -106,3 +106,21 @@ Ejecutar con PostgreSQL encendido y una base **aparte** (las pruebas borran sus 
 | 5 | JSON mal formado y rutas `/api/...` inexistentes respondían HTML | Errores y 404 de la API siempre en JSON |
 | 6 | `throw` dentro del callback de `session.regenerate` podía tumbar el servidor | Se pasa a `next(err)` |
 | 7 | Sin CSRF, sin límite de intentos, errores 5xx con detalles internos | Sección 4.3 |
+
+## 4.7 Aportación de Alondra: contacto y correo
+
+`ContactoController` recibe nombre, correo, teléfono opcional y mensaje. Valida tipos y longitudes, exige un mensaje de 10 a 5000 caracteres y devuelve 422 cuando los datos no cumplen. La vista conserva lo capturado y escapa valores con EJS.
+
+`MailService` usa Nodemailer y las variables SMTP del entorno. El puerto 465 activa TLS directo; el 587 utiliza la negociación SMTP habitual. Sin servidor o destinatario configurado, el envío falla de forma explícita: no se simula un éxito. Se establecen tiempos máximos de conexión y respuesta. El correo del visitante se utiliza en `replyTo`; el remitente es la cuenta configurada.
+
+Cuando el servidor SMTP acepta al menos un destinatario, el controlador redirige con confirmación. Si ocurre un error, devuelve 503 con el formulario y sus datos. La recepción en bandeja requiere una prueba manual adicional.
+
+## 4.8 Aportación de Alondra: ficha y reporte PDF
+
+`PdfService.ficha` genera una ficha A4 mediante PDFKit con título, precio, estatus, recámaras, baños, ubicación y descripción. Sharp convierte la foto principal de WebP a JPEG en memoria. Una imagen ausente o ilegible no impide generar la ficha.
+
+`PdfService.reporte` genera el inventario con totales de casas en venta y vendidas, fecha y columnas de identificación, ciudad, precio y estatus. La tabla se ajusta al ancho útil A4, repite encabezados al cambiar de página y muestra un mensaje si el catálogo está vacío. Las rutas son `/casas/:id/ficha.pdf` y `/admin/reporte.pdf` (esta última protegida).
+
+## 4.9 Aportación de Alondra: multimedia
+
+La página `/video` incorpora controles HTML5 y espera `public/media/multicasa.mp4` y `public/media/consejos.mp3`. El guion y los parámetros de exportación se encuentran en `docs/guiones-multimedia.md`. Los archivos finales y la comprobación de reproducción siguen pendientes. Consultar el documento 06 para incluirlos en la entrega, ya que la configuración actual de Git los ignora.

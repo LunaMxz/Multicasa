@@ -58,7 +58,8 @@ class PdfService {
     doc.text(`Total: ${casas.length}   |   En venta: ${enVenta.length}   |   Vendidas: ${casas.length - enVenta.length}`);
     doc.moveDown();
 
-    const cols = [['ID', 40], ['Título', 190], ['Ciudad', 100], ['Precio', 100], ['Estatus', 70]];
+    // Ancho total dentro de A4 y sus márgenes: 515 puntos.
+    const cols = [['ID', 35], ['Título', 180], ['Ciudad', 100], ['Precio', 100], ['Estatus', 100]];
     const encabezado = (y) => {
       let x = 40;
       doc.font('Helvetica-Bold').fontSize(10).fillColor('#000');
@@ -69,6 +70,7 @@ class PdfService {
     let y = doc.y;
     encabezado(y);
     y += 20;
+    if (!casas.length) doc.font('Helvetica').fontSize(11).text('No hay casas registradas.', 40, y);
     casas.forEach((c) => {
       if (y > 780) { doc.addPage(); y = 40; encabezado(y); y += 20; }
       const celdas = [c.id, c.titulo, c.ciudad, moneda(c.precio), c.estatus === 'venta' ? 'Venta' : 'Vendida'];

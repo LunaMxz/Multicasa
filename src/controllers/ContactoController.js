@@ -11,10 +11,11 @@ class ContactoController {
 
   enviar = async (req, res) => {
     const b = req.body || {};
-    const datos = { nombre: (b.nombre || '').trim(), email: (b.email || '').trim(), telefono: (b.telefono || '').trim(), mensaje: (b.mensaje || '').trim() };
+    const campo = (valor) => typeof valor === 'string' ? valor.trim() : '';
+    const datos = { nombre: campo(b.nombre), email: campo(b.email), telefono: campo(b.telefono), mensaje: campo(b.mensaje) };
 
-    if (!datos.nombre || !EMAIL_RE.test(datos.email) || datos.mensaje.length < 10) {
-      res.locals.flash = { tipo: 'error', mensaje: 'Revisa los datos: nombre, correo válido y un mensaje de al menos 10 caracteres.' };
+    if (!datos.nombre || datos.nombre.length > 100 || !EMAIL_RE.test(datos.email) || datos.email.length > 254 || datos.telefono.length > 30 || datos.mensaje.length < 10 || datos.mensaje.length > 5000 || /[\r\n]/.test(datos.nombre + datos.email)) {
+      res.locals.flash = { tipo: 'error', mensaje: 'Revisa los datos: nombre (máximo 100), correo válido, teléfono (máximo 30) y mensaje de 10 a 5000 caracteres.' };
       return res.status(422).render('pages/contacto', { titulo: 'Contacto', datos });
     }
     try {
@@ -22,7 +23,8 @@ class ContactoController {
       req.session.flash = { tipo: 'ok', mensaje: '¡Gracias! Tu mensaje fue enviado.' };
     } catch (err) {
       console.error('Error enviando correo:', err.message);
-      req.session.flash = { tipo: 'error', mensaje: 'No se pudo enviar el mensaje. Intenta más tarde.' };
+      res.locals.flash = { tipo: 'error', mensaje: 'No se pudo enviar el mensaje. Intenta más tarde.' };
+      return res.status(503).render('pages/contacto', { titulo: 'Contacto', datos });
     }
     return res.redirect('/contacto');
   };
